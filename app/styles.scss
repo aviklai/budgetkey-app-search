@@ -1,6 +1,3 @@
-// FONTS
-@import url('https://fonts.googleapis.com/css?family=Miriam+Libre');
-
 // COLORS
 $bg: #F6F6F6;
 
@@ -8,35 +5,40 @@ budgetkey-container {
   background: $bg fixed;
   background-image: linear-gradient(-180deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.05) 100%);
   background-image: -webkit-linear-gradient(270deg, transparent 0%, rgba(0, 0, 0, 0.05) 100%);
-  font-size: 10px;
   min-height: 400px;
-  height:  85vh;
-  min-width: 1250px;
   display: block;
-  .search_body{
-    overflow-y: scroll;
-    height: 60vh;
+  .container-fluid {
+    max-width: 800px;
+    margin: auto;
+    left: -50%;
+    right: 400px;
   }
-  .search_body::-webkit-scrollbar {
-    display: none;
+  .search_body {
+    margin-top: 20px;
+
+    .status {
+      padding: 0 10px;
+      color: #4A4A4A;
+      font-family: "Abraham TRIAL";
+      font-size: 16px;
+      letter-spacing: 0.37px;
+      line-height: 19px;
     }
+  }
+
 }
 
-h1 {
-  color: #369;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 250%;
+em {
+  background-color: #ffff1a;
+
+  &.result-label {
+    background-color: inherit;
+    font-style: inherit;
+  }
 }
+
 a {
   text-decoration: none !important;
-}
-
-h1.status{
-  text-align: center;
-}
-
-.input-group.input-group {
-
 }
 
 .sub-items-list {
@@ -53,9 +55,6 @@ h1.status{
   display: inline-block;
 }
 
-.headerBottomBorder{
-  border-bottom: 1px solid #4A4A4A;
-}
 .search-box{
   input.form-control:first-child {
     height: 44px;
@@ -65,15 +64,34 @@ h1.status{
     border-right: 0;
     border-radius: 0 25px 25px 0;
   }
+  .downloader {
+    background: #FFFFFF;
+    height:44px;
+    padding: 0px 8px;
+    padding-right: 4px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075)
+  }
+  div.downloader {
+    height:32px;
+    background: #FFFFFF;
+    background-image: url(assets/img/download-csv.svg);
+    background-repeat: no-repeat;
+    margin-top: 7px;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+    width: 26px;
+
+  }
   .input-group-addon:last-child {
     height: auto;
     padding: 11px 16px 7px;
-    background: #fff;
+    background: #FFFFFF;
     border-radius: 25px 0 0 25px;
     border-color: #DADADA;
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075)
   }
 }
+
 .search-filter{
   margin: 20px;
 
@@ -100,568 +118,148 @@ h1.status{
   }
 }
 
+.search-result {
+  margin-bottom: 20px !important;
+  overflow: visible;
 
-/********* search-result-budget *********/
-
-search-result-budget {
-  background: #FFFFFF;
-  box-shadow: 0 1px 1px 0 #BEBEBE;
-  border-radius: 6px;
-  // min-height: 118px;
-  display: block;
-  margin-bottom: 20px;
-  .breadcrumb,
-  .sub-items {
-    padding: 10px 15px;
-    font-size: 1.4em;
-
-  }
-  .breadcrumb{
-    color: #9B9B9B;
+  .search-result-body {
     margin: 0;
-    background: none;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    overflow-y: hidden;
+    min-height: 100px;
   }
 
-  .header {
-    background: transparentize(#777777, 0.8);
-    border-top: solid 3px #777777;
-    color: #777777;
-    font-weight: 700;
-    margin: 0;
-    .code {
-      font-size: 1.4rem;
-      font-weight: 400;
-      margin-left: 0;
-      line-height: 3.6rem;
+  .result-label {
+    font-size: 13px;
+    background-color: black;
+    color: #fff;
+    position: relative;
+    display: block;
+    width: 100px;
+    text-align: center;
+    transform: rotate(90deg) translateX(100px) translateY(1px);
+    transform-origin: 100% 100%;
+  }
+  .preamble {
+    margin-top: -20px;
+    height: 0;
+  }
+  .top-part {
+    background-color: #fff;
+    height: 28px;
+    padding-top: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    vertical-align: top;
+    .breadcrumbs {
+      display: inline-block;
+      margin-left: 10px;
+      width: 400px;
     }
-    .title {
-      margin: 0 0 0 0;
-      font-size: 2em;
-      strong {
+    .category {
+      display: inline-block;
+      width: 100%;
+      text-align: left;
+    }
+  }
+  .title-part {
+    background-color: #f8f8f8;
+    padding-top: 6px;
+    .title-right-part {
+
+      a {
+        cursor: pointer;
+      }
+
+      .title-bit {
+        white-space:nowrap;
+        overflow:hidden;
+        .pretitle {
+          display: inline-block;
+          font-size: 12px;
+          line-height: 18px;
+          margin-left: 10px;
+          white-space:nowrap;
+          vertical-align: top;
+        }
+        .title {
+          display: inline-block;
+          max-width: 400px;
+          font-size: 18px;
+          text-overflow: ellipsis;
+          overflow:hidden;
+          white-space:nowrap
+        }
+      }
+      .transaction {
         display: block;
-        white-space: nowrap;
-        overflow: hidden;
+        width: 750px;
+        font-size: 18px;
         text-overflow: ellipsis;
+        overflow:hidden;
+        white-space:nowrap
       }
-      span{
-        font-size: 1.6rem;
-        display: inline-block;
-      }
+    }
+    .pay-period {
+      display: inline-block;
     }
     .amount {
-      text-align: left;
-      padding: 0 0 5px 10px;
-      display: block;
-      font-weight: 700;
-      font-size: 1.6em;
-    }
-  }
-
-
-  @each $change, $change-text in
-        (inc4,   #C20801),
-        (inc3,   #FB3F06),
-        (inc2,   #F58F17),
-        (inc1,   #EAAF03),
-        (even,   #777777),
-        (dec1,   #6DD1DA),
-        (dec2,   #32A4F9),
-        (dec3,   #0065DE),
-        (dec4,   #01329C){
-
-    .#{$change} {
-      .header {
-        background: transparentize($change-text, 0.8);
-        color: $change-text;
-        border-top-color: $change-text;
-      }
-    }
-
-  }
-
-}
-
-/********* search-result-changes *********/
-$changes-color: #9B9B9B;
-$changes-color-secondary: #DCDCDC;
-$changes-color-bg: #F8F7F0;
-
-search-result-changes {
-  background: $changes-color-bg;
-  background-image: linear-gradient(-180deg, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.00) 50%);
-  box-shadow: 0 3px 3px 0 rgba(189,189,189,0.50);
-  min-height: 118px;
-  display: block;
-  font-size: 1.4rem;
-  margin-bottom: 20px;
-  color: $changes-color;
-  padding-right: 50px;
-  position: relative;
-  overflow: hidden;
-  &:before {
-    content: "";
-    background: url(assets/img/paper-hole.svg);
-    width: 49px;
-    height: 100%;
-    border-left: dashed 1px $changes-color-secondary;
-    display: block;
-    position: absolute;
-    right: 0;
-  }
-  .header {
-    padding: 10px 15px 0;
-    > div {
-      border-bottom: dashed 1px $changes-color-secondary;
-      padding-bottom: 10px;
-    }
-    .title{
-      font-weight: 700;
-      display: block;
-      font-size: 2rem;
-      color: #333333;
-    }
-    .status{
-      .date{
-        font-weight: 700;
-      }
-    }
-    .amount{
-      font-weight: 700;
-      display: block;
-      font-size: 1.6rem;
-      line-height: 2.8rem;
+      display: inline-block;
+      font-size: 18px;
+      overflow:hidden;
+      white-space:nowrap;
       text-align: left;
       direction: ltr;
-      &.decreased_a{
-        color: #44c4d0;
-      }
-    }
-    .relative-to-original{
-      text-align: left;
-      display: block;
+      float: left;
     }
   }
-  .changes-description{
-    padding: 10px;
-    .stamp {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      bottom: -10px;
-      left: -10px;
-      border-radius: 50%;
-      border: 2px solid $changes-color-secondary;
-      overflow: hidden;
-      display:flex;
-      align-items: center; /* Vertical center alignment */
-      justify-content: center; /* Horizontal center alignment */
-      transform: rotate(5deg);
-      opacity: .5;
-      span{
-        border-color: $changes-color-secondary;
-        border-style: solid;
-        border-width: 1px 0;
-        color: $changes-color-secondary;
-        font-weight: 700;
-        display: block;
-        text-align: center;
-        width: 100%;
-      }
-  }
-}
-}
-/******** search-result-exemption + supports **********/
-
-$expense-color: #38388A;
-$expense-color-secondary: #AEAED7;
-$expense-color-bg: #F3F8FD;
-
-.expense{
-  background: $expense-color-bg;
-  border: 1px solid $expense-color-secondary;
-  box-shadow: 0 2px 4px 0 rgba(135,157,181,0.50), inset 0 1px 0 0 #FFFFFF;
-  min-height: 116px;
-  max-height: 320px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 2px;
-  margin-bottom: 20px;
-  .search-result-type{
-    background: $expense-color-secondary;
-    color: #fff;
-    transform: rotate(90deg);
-    width: 100%;
-    height: 18px;
-    position: absolute;
-    display: block;
-    right: -50%;
-    top: 50%;
-    text-align: center;
-    font-size: 1.2em;
-    line-height: 1.4em;
-    margin-right: 9px;
-    margin-top: -5px;
-  }
-  .meta, .title, .description {
-    margin-right: 30px;
-  }
-  .header {
-    .meta {
-      font-size: 1.4em;
-      color: $expense-color-secondary;
-      padding-top: 5px;
-      display: block;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-    .title {
-      margin: 0 30px 0 0;
-      font-size: 2em;
-      color: $expense-color;
-      strong {
-        display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      span{
-        font-size: 1.6rem;
-        color: $expense-color-secondary;
-        display: inline-block;
-      }
-    }
-    .period {
-      text-align: left;
-      font-size: 1.4em;
-      color: $expense-color-secondary;
-      padding: 0 0 0 10px;
-      display: block;
-    }
-    .amount {
-      text-align: left;
-      padding: 0 0 0 10px;
-      display: block;
-      font-weight: 700;
-      font-size: 2em;
-      color: $expense-color;
-    }
-  }
-  .description {
-    background: #FFFFFF;
-    border-style: solid;
-    border-color: $expense-color-secondary;
-    border-width: 1px 1px 0 0;
-    box-shadow: inset 0 1px 0 0 #FFFFFF;
-    padding: 5px 5px 5px 50px;
-    font-size: 1.2em;
-    color: #797979;
-    min-height: 48px;
+  .bottom-part {
+    width: 700px;
+    text-overflow: ellipsis;
     overflow: hidden;
-    .stamp {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      bottom: -10px;
-      left: -10px;
-      border-radius: 50%;
-      border: 2px solid $expense-color-secondary;
-      overflow: hidden;
-      display:flex;
-      align-items: center; /* Vertical center alignment */
-      justify-content: center; /* Horizontal center alignment */
-      transform: rotate(5deg);
-      opacity: .5;
-      span{
-        border-style: solid;
-        border-color: $expense-color-secondary;
-        border-width: 1px 0;
-        color: $expense-color-secondary;
-        font-weight: 700;
-        display: block;
-        text-align: center;
-        width: 100%;
-      }
+    white-space: nowrap;
+    padding-top: 6px;
+    label, span {
+      font-size: 13px;
+    }
+    label {
+      padding-left: 10px;
+      font-weight: 500;
     }
   }
 }
 
-$supports-color: #8A4838;
-$supports-color-secondary: #CEB9B5;
-$supports-color-bg: #FEFAF9;
+@import './styles/search-result.scss';
+@import './styles/filters.scss';
 
-search-result-supports {
-  .expense{
-    background: $supports-color-bg;
-    border-color: $supports-color-secondary;
-    .search-result-type{
-      background: $supports-color-secondary;
-    }
-    .header {
-      .breadcrumb{
-        color: $supports-color-secondary;
-        margin: 0 30px 0 0;
-        background: none;
-        font-size: 1.4em;
-        padding: 5px 0 0;
-        display: block;
-        li+li::before{
-          color: $supports-color-secondary;
-        }
-        a {
-          color: $supports-color-secondary;
-        }
-        li:last-child a{
-          font-weight: 700;
-        }
-      }
-      .title {
-        color: $supports-color;
-        span{
-          color: $supports-color-secondary;
-        }
-      }
-      .period{
-        color: $supports-color-secondary;
-      }
-      .amount {
-        color: $supports-color;
-      }
-    }
-    .description {
-      border-color: $supports-color-secondary;
-      color: $supports-color-secondary;
-      &.others {
-        background: none;
-        padding: 3px 0;
-        border: 0;
-        border-top: 1px solid $supports-color-secondary;
-        color: $supports-color;
-        margin-top: 3px;
-        min-height: 46px;
-      }
-      .stamp {
-        border-color: $supports-color-secondary;
-        span{
-          border-color: $supports-color-secondary;
-          color: $supports-color-secondary;
-        }
-      }
-    }
+@media only screen and (max-width: 600px) {
+  .app {
+    margin-top: 0;
+    min-height: 100vh;
   }
-}
 
-// @each $kind in company, association {
+  budgetkey-header {
+    display: none;
+  }
 
-@each $kind, $entity-color-bg, $entity-color-border, $entity-color-text , $entity-color-text-light in
-      (entity, #DEDEDE, #CCC, #515151, #8A8A8A),  //Gray
-      (association, #D1DFC4, #A9CC8B, #2B5109, #5E8A38), //Green
-      (company, #C4D4DF, #8BB2CC, #093551, #38698A), //Blue
-      (gov, #F2E5BE, #D7B494, #512C0A, #8A4838){ //Yellow
+  budgetkey-footer {
+    display: none;
+  }
 
-  search-result-entities {
-    margin-bottom: 20px;
-    display: block;
+  .type-text-in-search-bar-right {
+    display: none;
+  }
 
-    .#{$kind} {
-      color: $entity-color-text;
-      display: block;
-      background-color: #FEFAF9;
-      border: 1px solid #DBDBDB;
-      min-height: 110px;
-      position: relative;
-      &::before,
-      &::after{
-        content: "";
-        display: block;
-        top: -5px;
-        background-color: #FEFAF9;
-        border: 1px solid #DBDBDB;
-        position: absolute;
-        height: 3px;
-        left: 4px;
-        right: 0;
-      }
-      &::after{
-        top: -3px;
-        left: 2px;
-      }
+  search-filter-menu-bar {
+    display: none;
+  }
 
-      .header {
-        z-index: 1;
-        position: relative;
+  .bkmodal-dialog {
+    width: 90% !important;
+  }
 
-        h3 {
-          font-size: 2em;
-          display: inline-block;
-          border-radius: 3px 2px 0 0;
-          background: $entity-color-bg;
-          border-style: solid;
-          border-color: $entity-color-border;
-          border-width: 1px 1px 0 0;
-          padding: 10px 10px 7px;
-          position: relative;
-          margin: -10px 0 0;
-
-          &::after{
-            content: "";
-            background: url(assets/img/#{$kind}_angle.svg);
-            height: 40px;
-            width: 30px;
-            display: block;
-            position: absolute;
-            top: -1px;
-            left: -28px;
-          }
-        }
-      }
-      .figures {
-        text-align: left;
-        height: 100px;
-        font-size: 1.4rem;
-        padding-top: 5px;
-        color: $entity-color-text-light;
-        padding-left: 25px;
-        // .amount{
-        //   font-size: 1.6rem;
-        //   font-weight: 700;
-        //   margin-left: 10px;
-        // }
-        .period {
-          text-align: left;
-          font-size: 1em;
-        }
-      .amount {
-          text-align: left;
-          font-weight: 700;
-          font-size: 1em;
-          color: $expense-color;
-        }
-      }
-
-      .body{
-        min-height: 80px;
-        margin-top: -71px;
-        margin-left: 10px;
-        border-radius: 2px;
-        background: $entity-color-bg;
-        border: 1px solid $entity-color-border;
-        position: relative;
-        &::after{
-          content: "";
-          display: block;
-          bottom: 0;
-          width: 100%;
-          height: 6px;
-          background: $entity-color-bg;
-          border: 1px solid $entity-color-border;
-          box-shadow: 0 -2px 2px 0 rgba(0,0,0,0.10);
-          border-radius: 3px 2px 0 0;
-          position: absolute;
-        }
-        .description {
-          position: absolute;
-          bottom: 0;
-          right: 0;
-          padding: 10px;
-          font-size: 1.4em;
-          min-height: 80px;
-          > div {
-            background: #FBFBFB;
-            background: linear-gradient(
-              to bottom,
-              #FBFBFB,
-              #FBFBFB 95%,
-              #DEE7EF 95%,
-              #DEE7EF
-            );
-            background-size: 100% 20px;
-            box-shadow: 0 0 3px 0 rgba(0,0,0,0.10);
-            position: relative;
-            min-height: 65px;
-            &::after{
-              content: "";
-              width: 1px;
-              background: #ECD7D6;
-              position: absolute;
-              height: 65px;
-              right: 60px;
-              top: 0;
-            }
-            > p {
-              margin: 0 5px;
-              > strong {
-                display: inline-block;
-                float: right;
-                width: 60px;
-              }
-              > span {
-                display: inline-block;
-                float: right;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                white-space: nowrap;
-                width: 90%;
-              }
-            }
-          }
-        }
-        .stamp {
-          span{
-            padding-top: 10px;
-            display: block;
-            font-weight: 700;
-          }
-          line-height: 1.4em;
-          width: 114px;
-          height: 55px;
-          position: absolute;
-          top: 15px;
-          left: 30px;
-          background: url(assets/img/stamp-#{$kind}.svg);
-          transform: rotate(2deg);
-          text-align: center;
-          font-size: 1.2em;
-        }
-      }
-
-      @media (max-width: 768px) {
-        margin-bottom: 30px;
-        .header {
-          .title {
-            margin-left: 19px;
-            position: relative;
-            z-index: 1;
-          }
-          h3:after {
-            height: 100%;
-            margin-bottom: -1px;
-          }
-          .figures {
-            margin: -7px 0 -12px 10px;
-            div {
-              background: $entity-color-bg;
-              border-style: solid;
-              border-color: $entity-color-border;
-              border-width: 1px 1px 0;
-            }
-          }
-        }
-        .body {
-          min-height: 122px;
-          .description {
-            > div::after{
-              height: 100px;
-            }
-          }
-          .stamp {
-            bottom: -20px;
-            top: auto;
-            left: -10px;
-            z-index: 10;
-          }
-        }
-      }
-    }
+  .bkmodal-content {
+    padding: 30px !important;
   }
 }

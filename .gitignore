@@ -15,3 +15,6 @@ dist/
 
 # Vim temp files
 **/*.swp
+.budgetkey-ng2-components
+
+.vscode

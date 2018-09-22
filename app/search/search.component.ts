@@ -1,80 +1,118 @@
 /**
  * Created by adam on 18/12/2016.
  */
-import { Component, OnInit, ViewChild, ElementRef} from '@angular/core';
+import { Component, HostListener, Inject } from '@angular/core';
 import { Observable }        from 'rxjs/Observable';
 import { Subject }           from 'rxjs/Subject';
 import { BehaviorSubject }   from 'rxjs/BehaviorSubject';
+import { from }              from 'rxjs/observable/from';
 import { SearchService }     from '../_service/search.service';
-import { SearchResults, DocResultEntry, SearchResultsCounter} from '../_model/SearchResults';
-import { Router, ActivatedRoute, Params } from '@angular/router';
+import { DownloadService } from '../_service/download.service';
+import { SearchResults, DocResultEntry} from '../_model/SearchResults';
+import { ActivatedRoute, Params } from '@angular/router';
 import { Location } from '@angular/common';
+import { TimeRanges } from '../timeline-menu/time-ranges';
+import { SearchBarType } from 'budgetkey-ng2-components/src/components';
+
+import { THEME_TOKEN, LANG_TOKEN } from 'budgetkey-ng2-components';
+import { SearchParams } from '../_model/SearchParams';
+
 
 @Component({
   selector: 'budget-search',
   template: require('./search.component.html'),
   styles: [require('./search.component.css')],
-  providers: [SearchService]
+  providers: [SearchService, DownloadService]
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent {
 
-  private searchTerms: Subject<string>;
+  // Search request and response pipeline
+  private searchTerms: Subject<SearchParams>;
   private searchResults: Observable<SearchResults>;
-  private term: string = '';
-  private allDocs: BehaviorSubject<DocResultEntry[]>;
-  private allResults: any;
-  private resultTotal: number;
-  private resultTotalCount: SearchResultsCounter;
-  private resultCurrentCount: SearchResultsCounter;
-  private displayDocs: string; // category
-  private currentDocs: string; // category
-  private pageSize: number; // how many records to load for each scroll
-  private skip: number;  // how many records to skip from recently fetched query (when appending to the list)
-  private fetchFlag: boolean;
-  private resultRenew: boolean; //
-  private headerBottomBorder: boolean;
-  private isSearching: boolean;
-  private isErrorInLastSearch: boolean;
 
-  @ViewChild('searchBody')
-  private searchBodyEl: ElementRef;
+  // Component state
+  private subscriptionProperties: any = {};
+  private subscriptionUrlParams: string;
+
+  private term: string = '';
+  private selectedPeriod: any;
+  private selectedDocType: SearchBarType;
+
+  // Results and stats
+  private allResults: any = [];
+  private timeline: any[];
+
+  // config
+  private pageSize = 10; // how many records to load for each scroll
+
+  // Timeline selection
+  private periods: any[];
+
+  // Tabs selection
+  private docTypes: any[];
+
+  private overScroll = false; // ??
+
+  // Statue
+  private isSearching = false;
+  private isErrorInLastSearch = false;
+
+  // For download
+  private allDocs: BehaviorSubject<DocResultEntry[]>;
+
+  // @ViewChild('timeline') timeline: TimelineComponent;
 
   constructor(
     private searchService: SearchService,
+    private downloadService: DownloadService,
     private route: ActivatedRoute,
-    private router: Router,
-    private location: Location
-  ) {}
+    private location: Location,
+
+    @Inject(THEME_TOKEN) private theme: any,
+    @Inject(LANG_TOKEN) private lang: string
+  ) {
+    this.periods = (new TimeRanges()).periods;
+    this.docTypes = this.theme.searchBarConfig;
+    this.selectedDocType = this.docTypes[0];
+    this.lang = lang;
+  }
 
   ngOnInit() {
-    this.searchTerms = new Subject<string>();
-    this.allDocs = new BehaviorSubject<DocResultEntry[]>([]);
-    this.allResults = [];
-    this.resultTotal = 0;
-    this.resultTotalCount = new SearchResultsCounter();
-    this.resultCurrentCount = new SearchResultsCounter();
-    this.displayDocs = 'all';
-    this.currentDocs = 'all';
-    this.pageSize = 10;
-    this.skip = -10;
-    this.fetchFlag = true;
-    this.resultRenew = true;
-    this.allResults = [];
-    this.headerBottomBorder = false;
-    this.isSearching = false;
-    this.isErrorInLastSearch = false;
-    // ^ moved from constructor ^
 
-    this.searchResults = this.searchTerms // open a stream
-      .debounceTime(300)        // wait for 300ms pause in events
+    this.searchTerms = new Subject<SearchParams>();
+    this.allDocs = new BehaviorSubject<DocResultEntry[]>([]);
+
+    // Connect the search pipeline
+    this.searchResults = <Observable<SearchResults>>(this.searchTerms) // open a stream
+      .debounceTime(300)           // wait for 300ms pause in events
       // .distinctUntilChanged()   // ignore if next search term is same as previous
-      .switchMap(() => {
-        if (this.term) {
-          this.location.go(`/search?term=${this.term}`);
-        } else {
-          this.location.go(`/search`);
+      .switchMap((sp: SearchParams) => {
+
+        let url;
+        let term = sp.defaultTerm ? '' : sp.term;
+        if (sp.timeRange === 'custom_range') {
+          this.subscriptionUrlParams = `range=${sp.timeRange}&from=${sp.startRange}&to=${sp.endRange}`;
+        } else if (sp.timeRange) {
+          this.subscriptionUrlParams = `range=${sp.timeRange}`;
         }
-        return this.doRequest();
+        if (this.theme.themeId) {
+          this.subscriptionUrlParams += `&theme=${this.theme.themeId}`;
+        }
+        if (this.selectedDocType.filterMenu) {
+          for (let filterMenu of this.selectedDocType.filterMenu) {
+            sp.filters = Object.assign({}, sp.filters, filterMenu.selected.filters || {});
+            this.subscriptionUrlParams += '&' + filterMenu.id + '=' + filterMenu.selected.id;
+          }
+        }
+        url = `/?q=${term || ''}&dd=${sp.displayDocs}&${this.subscriptionUrlParams}&lang=${this.lang}`;
+        this.location.replaceState(url);
+
+        this.updateSubscriptionProperties(sp);
+        // return this.doRequest(sp);
+        return this.doRequest(sp);
+      })
+      .mergeMap((x: any) => {
+        return x;
       })
       .catch(error => {
         this.isSearching = false;
@@ -83,39 +121,88 @@ export class SearchComponent implements OnInit {
         return Observable.of<SearchResults>(null);
       });
     this.searchResults.subscribe((results) => {
-      this.isSearching = false;
-      this.processResults(results);
+      if (this.processResults(results)) {
+        this.isSearching = false;
+      }
     });
 
+    // Handle the URL query params
     this.route.queryParams
       .subscribe((params: Params) => {
-        if (params.term) {
-          this.search(params.term);
+
+        // Time range
+        let customPeriod = this.periods[ this.periods.length - 1];
+        customPeriod.start = params['from'] || customPeriod.start;
+        customPeriod.end = params['to'] || customPeriod.end;
+
+        let timeRange = params['range'] || 'last_decade';
+        for (let p of this.periods) {
+          if (p.value === timeRange) {
+            this.selectedPeriod = p;
+            break;
+          }
         }
+
+        // Term
+        if (params['q']) {
+          this.term = params['q'];
+        }
+        if (params['dd']) {
+          for (let dt of this.docTypes) {
+            if (dt.id === params['dd']) {
+              this.selectedDocType = dt;
+              break;
+            }
+          }
+        }
+
+        // Filters
+        if (this.selectedDocType.filterMenu) {
+          for (let filterMenu of this.selectedDocType.filterMenu) {
+            if (params[filterMenu.id]) {
+              for (let option of filterMenu.options) {
+                if (params[filterMenu.id] === option.id) {
+                  filterMenu.selected = option;
+                  break;
+                }
+              }
+            }
+            if (!filterMenu.selected) {
+              filterMenu.selected = filterMenu.options[0];
+            }
+          }
+        }
+
+        this.doNext(this.term, 0);
+
         return null;
       });
   }
 
-  /**
-   * Push a search term into the observable stream.
-   */
-  search(term: string): void { // keyUp()
-    this.isSearching = true;
-    if (this.term !== term) { // initiate a new search
-      this.pageSize = 10;
-      this.skip = -10;
-      this.resultRenew = true;
-      this.fetchFlag = true;
-      this.term = term;
-      this.searchTerms.next(term);
-      this.doSwitchTab(1, 'all');
-      this.allResults = [];
 
-    } else {
-      this.resultRenew = false;
-      this.term = term;
-      this.searchTerms.next(term);
+  //// SEARCH PIPELINE
+
+  // Push search request to pipeline
+  doNext(term: string, offset: number) {
+    let defaultTerm = false;
+    if (!term && this.selectedDocType.defaultTerm) {
+      term = this.selectedDocType.defaultTerm;
+      defaultTerm = true;
     }
+    this.searchTerms.next({
+      term: term,
+      startRange: this.selectedPeriod.start,
+      endRange: this.selectedPeriod.end,
+      displayDocs: this.selectedDocType.id,
+      displayDocsDisplay: this.selectedDocType.name,
+      displayDocsTypes: this.selectedDocType.types,
+      timeRange: this.selectedPeriod.value,
+      timeRangeDisplay: this.selectedPeriod.title,
+      offset: offset,
+      pageSize: this.pageSize,
+      defaultTerm: defaultTerm,
+      filters: this.selectedDocType.filters || {}
+    });
   }
 
   /**
@@ -123,49 +210,27 @@ export class SearchComponent implements OnInit {
    * the main method of the component
    * posts a new query
    */
-
-  doRequest(): Observable<SearchResults> {
-    this.currentDocs = this.displayDocs;
-
-    let maxRecords = 0;
-    if (this.resultRenew) {
-      maxRecords = 11;
-    } else if (this.displayDocs === 'all') {
-      let result_arr = this.resultTotalCount;
-      // console.log(Object.keys(result_arr));
-      let count_arr = Object.keys(result_arr)
-        .map(key => {
-          return result_arr[key];
-        });
-      maxRecords = Math.max(...count_arr, 21);
-    } else {// if specific category is selected - maxRecords is the totalCount of that category(currentDocs)
-      maxRecords = this.resultTotalCount[this.currentDocs];
-    }
-
-    if (this.pageSize + this.skip < maxRecords) {
-      this.skip += this.pageSize;
-    } else if (this.pageSize + this.skip < maxRecords && maxRecords !== 0) {
-      this.skip = maxRecords - this.pageSize;
-    } else {
-      return Observable.of<SearchResults>(null);
-    }
-
-    let category = [this.currentDocs];
-    if (this.resultRenew) {
-      category = ['all'];
-    } else if (category[0] === 'procurement') {
-      category = ['contract-spending', 'exemptions'];
-    } else if (category[0] === 'nationalbudgetchanges') {
-      category = ['national-budget-changes'];
-    }
-
-    if (this.term) {
+  doRequest(sp: SearchParams): Observable<any> {
+    // Do actual request
+    if (sp.term) {
       this.isSearching = true;
       this.isErrorInLastSearch = false;
-      return this.searchService.search(this.term, this.pageSize, this.skip, category);
+      let search = this.searchService.search(sp);
+      let count = this.searchService.count(
+        sp.term,
+        sp.startRange,
+        sp.endRange,
+        this.docTypes.filter((dt: any) => dt !== this.selectedDocType)
+      );
+      let calls = [search, count];
+      // if (!this.theme.themeId) {
+        // let timeline = this.searchService.timeline(sp);
+        // calls.push(timeline);
+      // }
+      return from(calls);
     } else {
       this.isSearching = false;
-      return Observable.of<SearchResults>(null);
+      return Observable.of<any>([{offset: 0, search_results: []}]);
     }
   }
 
@@ -174,90 +239,126 @@ export class SearchComponent implements OnInit {
    * creates adds the current results to allResults
    * @param {SearchResults} results - returned results from query
    */
-  processResults(results: SearchResults): void {
-    console.log('results: ', results);
+  processResults(results: SearchResults): boolean {
+    let ret = false;
     if (results) {
-      if (this.resultRenew) {
-        this.resultTotal = 0;
-        this.resultTotalCount = new SearchResultsCounter();
-        this.resultCurrentCount = new SearchResultsCounter();
-      }
-      for (let key in results.search_counts) {
-        if (key) {
-          let tmpResults = results.search_counts[key];
-          if (key === 'exemptions' || key === 'contractspending') {
-            key = 'procurement';
+      if (results.search_counts) {
+        for (let key of Object.keys(results.search_counts)) {
+          let count = results.search_counts[key].total_overall;
+          if (key === '_current') {
+            key = results.params.displayDocs;
           }
-          if (this.resultRenew) {
-            this.resultTotal += tmpResults.total_overall;
-            this.resultTotalCount[key] += tmpResults.total_overall;
+          for (let dt of this.docTypes) {
+            if (dt.id === key) {
+              dt.amount = count;
+              break;
+            }
           }
         }
       }
-      for (let item of results.search_results){
-        let key = item.type;
-        if (key === 'exemptions' || key === 'contractspending') {
-          key = 'procurement';
-        }
-        this.resultCurrentCount[key] += 1;
+      if (results.search_results) {
+        this.allResults = this.allResults.slice(0, results.offset);
+        this.allResults.push(...results.search_results);
+        this.allDocs.next(this.allResults);
+        ret = true;
       }
-      this.allResults.push(...results.search_results);
-      this.allDocs.next(this.allResults);
-      this.fetchFlag = true;
-      this.resultRenew = false;
-    } else {
-      this.fetchFlag = false;
+      if (results.timeline) {
+        this.timeline = results.timeline;
+      }
     }
+    return ret;
   }
 
-  /**
-   * fetchMore()
-   * when scrolling, appends more results to the list
-   * @param {number} term
-   */
-  fetchMore(term: number): void {
-    const div = document.body.getElementsByClassName('search_body')[0];
-    this.headerBottomBorder = true;
-    const cur = div.scrollTop;
-    const divHeight = div.scrollHeight;
-    if (this.currentDocs !== this.displayDocs) {
-      this.currentDocs = this.displayDocs;
-      this.fetchFlag = true;
-    }
-    if (cur > 0.3 * divHeight && this.fetchFlag) {
-      this.fetchFlag = false;
-      this.searchTerms.next(this.term);
-    }
-  }
+  //// UI HELPERS
 
   getStatusText() {
     if (this.isSearching) {
-      return 'טוען...';
+      return 'טוען&hellip;';
     } else if (this.isErrorInLastSearch) {
-      return 'אירעה שגיאה בחיפוש, נסה שוב';
+      return 'אירעה שגיאה בחיפוש, נסו שוב';
     } else if (this.allResults.length === 0) {
-      return this.term ? 'אין תוצאות' : 'שורת החיפוש ריקה. בצע חיפוש כלשהו';
+      if (this.term) {
+        return 'אין תוצאות';
+      } else {
+        if (this.theme.sampleSearches) {
+            return '<b>חיפושים לדוגמה:</b> ' + this.theme.sampleSearches.join(', ') + '&hellip;';
+        } else {
+          return 'שורת החיפוש ריקה. בצעו חיפוש כלשהו';
+        }
+      }
     }
 
     return '';
   }
 
-  switchTab($event: any, collectionTotal: number, docType: string) {
-    $event.stopPropagation();
-    $event.preventDefault();
+  //// EVENT HANDLERS
 
-    this.doSwitchTab(collectionTotal, docType);
+  onTermChanged(term: string) {
+    if (this.term !== term) { // initiate a new search
+      this.term = term;
+      this.allResults = [];
+      this.doNext(term, this.allResults.length);
+    }
   }
 
-  doSwitchTab(collectionTotal: number, docType: string) {
-    if (collectionTotal) {
-      this.displayDocs  = docType;
-      this.searchBodyEl.nativeElement.scrollTop = 0;
-      if (this.resultCurrentCount[docType] < 10) {
-        this.searchTerms.next(docType);
+  onDocTypeSelected(docType: any) {
+    if (docType !== this.selectedDocType) {
+      this.selectedDocType = docType;
+      if (docType.filterMenu) {
+        for (let filterMenu of docType.filterMenu) {
+          if (!filterMenu.selected) {
+            filterMenu.selected = filterMenu.options[0];
+          }
+        }
       }
+      this.allResults = [];
+      this.doNext(this.term, this.allResults.length);
     }
+  }
 
-    // this.location.go(`/search?term=${this.term}`);
+  onPeriodChangeSearch(period: any) {
+    if (period !== this.selectedPeriod) {
+      this.selectedPeriod = period;
+      this.allResults = [];
+      this.doNext(this.term, this.allResults.length);
+    }
+  }
+
+  onSearchFilterMenuChange() {
+    this.allResults = [];
+    this.doNext(this.term, this.allResults.length);
+  }
+
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    if ((window.innerHeight * 1.7 + window.scrollY) >= document.body.scrollHeight) {
+      // Scrolled to bottom
+      if (!this.overScroll) {
+        this.overScroll = true;
+        this.doNext(this.term, this.allResults.length);
+      }
+    } else {
+      this.overScroll = false;
+    }
+  }
+
+  //// MISCELLANEOUS
+
+  /**
+   * Converts the current stack of results (allDocs)
+   * from json to csv
+   * and opens a download popup for the user
+   */
+  download(term: string): void {
+    this.downloadService.exportAsCsv(term + '.csv', this.allDocs);
+  }
+
+  updateSubscriptionProperties(sp: SearchParams) {
+    // Update subscription properties
+    this.subscriptionProperties = Object.assign({}, sp);
+    this.subscriptionProperties.kind = 'search';
+    delete this.subscriptionProperties['offset'];
+    delete this.subscriptionProperties['pageSize'];
   }
 }

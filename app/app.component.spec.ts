@@ -1,4 +1,5 @@
 import 'karma-test-shim';
+import './rxjs-extensions';
 
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
@@ -11,15 +12,24 @@ import { SearchService } from './_service/search.service';
 import { SearchComponent } from './search/search.component';
 
 import { BudgetKeyCommonModule } from 'budgetkey-ng2-components';
-import { SearchResultBudgetComponent } from './search_result/search_result.component';
-import { SearchResultChangesComponent } from './search_result/search_result.component';
-import { SearchResultExemptionComponent } from './search_result/search_result.component';
-import { SearchResultProcurementComponent } from './search_result/search_result.component';
-import { SearchResultSupportsComponent } from './search_result/search_result.component';
-import { SearchResultEntitiesComponent } from './search_result/search_result.component';
-import { SearchResultPeopleComponent } from './search_result/search_result.component';
+import { SearchResultComponent,
+         BudgetSearchResultComponent,
+         EntitiesSearchResultComponent,
+         TendersSearchResultComponent,
+         ContractSpendingSearchResultComponent,
+         SupportsSearchResultComponent,
+         ReportsSearchResultComponent,
+        } from './search-result';
+import { TimelineComponent } from './timeline/timeline.component';
+import { TimelineMenuComponent } from './timeline-menu/timeline-menu.component';
+import { TimelineScaleComponent } from './timeline-scale/timeline-scale.component';
+import { SearchFilterMenuBarComponent,
+         SearchFilterMenuComponent,
+} from './search-filter';
 
-import { Highlighter } from './highlighter/search.highlighter';
+import { FormsModule } from '@angular/forms';
+import { APP_BASE_HREF } from '@angular/common';
+
 
 describe('AppComponent', function () {
   let de: DebugElement;
@@ -32,21 +42,29 @@ describe('AppComponent', function () {
         HttpModule,
         BudgetKeyCommonModule,
         AppRoutingModule,
+        FormsModule
       ],
       declarations: [
         AppComponent,
         SearchComponent,
-        SearchResultBudgetComponent,
-        SearchResultChangesComponent,
-        SearchResultExemptionComponent,
-        SearchResultProcurementComponent,
-        SearchResultSupportsComponent,
-        SearchResultEntitiesComponent,
-        SearchResultPeopleComponent,
-        Highlighter
+
+        SearchResultComponent,
+        SearchFilterMenuBarComponent,
+        SearchFilterMenuComponent,
+        BudgetSearchResultComponent,
+        EntitiesSearchResultComponent,
+        TendersSearchResultComponent,
+        ContractSpendingSearchResultComponent,
+        SupportsSearchResultComponent,
+        ReportsSearchResultComponent,
+
+        TimelineComponent,
+        TimelineMenuComponent,
+        TimelineScaleComponent
       ],
       providers: [
-        SearchService
+        SearchService,
+        {provide: APP_BASE_HREF, useValue : '/' }
       ],
     })
     .compileComponents();

@@ -1,3 +1,5 @@
+import { SearchParams } from './SearchParams';
+
 /**
  * Created by adam on 18/12/2016.
  */
@@ -22,10 +24,9 @@ class KindResults {
 
 class SearchResultsCounts {
   entities: KindResults;
-  // exemptions: KindResults;
   budget: KindResults;
   supports: KindResults;
-  nationalbudgetchanges: KindResults;
+  'national-budget-changes': KindResults;
   procurement: KindResults;
   people: KindResults;
 }
@@ -33,15 +34,10 @@ class SearchResultsCounts {
 export class SearchResults {
   search_counts: SearchResultsCounts;
   search_results: Array<DocResultEntry>;
-}
-
-export class SearchResultsCounter {
-  entities:  number = 0;
-  // exemptions: number;
-  budget:    number = 0;
-  supports:  number = 0;
-  nationalbudgetchanges: number = 0;
-  // contractspending: number;
-  procurement: number = 0;
-  people: number = 0;
+  timeline: Array<any>;
+  term: string;
+  displayDocs: string;
+  offset: number;
+  pageSize: number;
+  params?: SearchParams;
 }
